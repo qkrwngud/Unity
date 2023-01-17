@@ -87,7 +87,7 @@ public class Player : MonoBehaviour
         {
             Ground = false;
         }
-
+        Debug.Log(Ground);
     }
 
 }

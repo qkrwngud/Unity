@@ -1,16 +1,25 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class block : MonoBehaviour
 {
 
     public GameObject player;
 
+    public Transform target;
+
+
+    NavMeshAgent agent;
+
     private Rigidbody player_rigid;
     private Rigidbody block_rigid;
+    private Transform block_trans;
 
     private Renderer color_object;
+
+    private bool check_speed = false;
 
     // Start is called before the first frame update
     void Start()
@@ -18,15 +27,28 @@ public class block : MonoBehaviour
         player_rigid = player.GetComponent<Rigidbody>();
         block_rigid = gameObject.GetComponent<Rigidbody>();
         color_object = gameObject.GetComponent<Renderer>();
+        block_trans = gameObject.GetComponent<Transform>();
+
+
+        agent = GetComponent<NavMeshAgent>();
     }
 
     private void FixedUpdate()
     {
+
+        block_trans.transform.eulerAngles = new Vector3(0, 0, 0);
+
+        target = GameObject.Find("player").transform;
+
+        agent.destination = target.transform.position;
+
         float distance = GetDistance(player_rigid.transform.position.x, player_rigid.transform.position.z,
             block_rigid.transform.position.x, block_rigid.transform.position.z);
 
 
-        if(distance < 6)
+        if (check_speed) agent.speed = 0;
+
+        if (distance < 6)
         {
             color_object.material.color = Color.black;
         }
@@ -47,5 +69,16 @@ public class block : MonoBehaviour
 
         return distance;
     }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        agent.speed = 0;
+
+        check_speed = true;
+
+        block_rigid.constraints = RigidbodyConstraints.FreezeAll;
+    }
+
+
 
 }
