@@ -7,20 +7,25 @@ public class Player : MonoBehaviour
 
     private Rigidbody rigidbody;
     public float speed = 10f; // 속도 
-    public float jump = 3f; // 점프 높이 
-    public float dash = 5f; // 대시 
+
     public float rotSpeed = 3f;
+    public float damage;
+    public GameObject rigidblock;
+
 
     private Vector3 dir = Vector3.zero;
 
-    private bool Ground = false;
+    private Rigidbody block_rigid;
+
     public LayerMask Layer;
 
+    private bool move = true;
 
     void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
 
+        block_rigid = rigidblock.GetComponent<Rigidbody>();
     }
 
     void Update()
@@ -30,23 +35,29 @@ public class Player : MonoBehaviour
         dir.z = Input.GetAxis("Vertical");
         dir.Normalize(); // 대각선에서만 빨리지는 경우를 없에줌
 
-        CheckGround();
 
-        if(Input.GetButtonDown("Jump") && Ground)
+        // 공격
+        float distance = GetDistance(rigidbody.transform.position.x, rigidbody.transform.position.z,
+            block_rigid.transform.position.x, block_rigid.transform.position.z);
+
+
+        if (block.block_HP > 0)
         {
-            rigidbody.drag = 0;
+            if (distance < 2)
+            {
+                if (Input.GetKeyDown(KeyCode.K))
+                {
+                    move = false;
+                    block.block_HP -= damage;
+                    Debug.Log(damage + "의 피해를 입힘");
 
-            Vector3 jumpPower = Vector3.up * jump; // 위로 올라갈 힘 
-            rigidbody.AddForce(jumpPower, ForceMode.VelocityChange);
+                    Invoke("change_move", 0.2f); // 딜레이 이후에 change_move함수 호출
+
+                }
+            }
         }
 
-        if(Input.GetButtonDown("Dash"))
-        {
-            rigidbody.drag = 20;
 
-            Vector3 dashPower = transform.forward * -Mathf.Log(1 / rigidbody.drag) * dash;
-            rigidbody.AddForce(dashPower, ForceMode.VelocityChange);
-        }
 
     }
 
@@ -56,38 +67,42 @@ public class Player : MonoBehaviour
             dir은 처음에 전부 0인데
             입력을 받으면 Vector3.zero와 달라진다
         */
-        if (dir != Vector3.zero)
+
+        if (move)
         {
-            // 지금 바라보는 방향의 부호 != 갈 방 부호
-            // Mathf.Sigh은 부호를 판별해줌 0이면 0, 양수면 1, 음수면 -1
-            if(Mathf.Sign(transform.forward.x) != Mathf.Sign(dir.x) || Mathf.Sign(transform.forward.z) != Mathf.Sign(dir.z))
+            if (dir != Vector3.zero)
             {
-                transform.Rotate(0, 1, 0);
+                // 지금 바라보는 방향의 부호 != 갈 방 부호
+                // Mathf.Sigh은 부호를 판별해줌 0이면 0, 양수면 1, 음수면 -1
+                if (Mathf.Sign(transform.forward.x) != Mathf.Sign(dir.x) || Mathf.Sign(transform.forward.z) != Mathf.Sign(dir.z))
+                {
+                    transform.Rotate(0, 1, 0);
+                }
+
+
+                // Lerp는 처음 위치에서 dir까지 서서히 움직임(Time.deltaTime만 넣으면 너무 느려서 3f를 곱해줌)
+                transform.forward = Vector3.Lerp(transform.forward, dir, rotSpeed * Time.deltaTime);
             }
 
-
-            // Lerp는 처음 위치에서 dir까지 서서히 움직임(Time.deltaTime만 넣으면 너무 느려서 3f를 곱해줌)
-            transform.forward = Vector3.Lerp(transform.forward, dir, rotSpeed *Time.deltaTime ); 
+            // 현재 위치 + 갈 방향 * 속도 * Time.deltaTime
+            rigidbody.MovePosition(gameObject.transform.position + dir * speed * Time.deltaTime);
         }
-        
-        // 현재 위치 + 갈 방향 * 속도 * Time.deltaTime
-        rigidbody.MovePosition(gameObject.transform.position + dir * speed * Time.deltaTime);
-
     }
 
-    void CheckGround()
+    float GetDistance(float x1, float y1, float x2, float y2)
     {
-        RaycastHit hit;
+        float width = Mathf.Abs(x2 - x1);
+        float height = Mathf.Abs(y2 - y1);
 
-        if (Physics.Raycast(transform.position + (Vector3.up * 0.2f), Vector3.down, out hit, 0.4f, Layer))
-        {
-            Ground = true;
-        }
-        else
-        {
-            Ground = false;
-        }
-        Debug.Log(Ground);
+        float distance = width * width + height * height;
+        distance = Mathf.Sqrt(distance);
+
+        return distance;
+    }
+
+    void change_move()
+    {
+        move = true;
     }
 
 }

@@ -10,16 +10,16 @@ public class block : MonoBehaviour
 
     public Transform target;
 
+    public static float block_HP = 100.0f;
 
     NavMeshAgent agent;
 
     private Rigidbody player_rigid;
     private Rigidbody block_rigid;
-    private Transform block_trans;
 
     private Renderer color_object;
 
-    private bool check_speed = false;
+    private bool AIon = false;
 
     // Start is called before the first frame update
     void Start()
@@ -27,7 +27,6 @@ public class block : MonoBehaviour
         player_rigid = player.GetComponent<Rigidbody>();
         block_rigid = gameObject.GetComponent<Rigidbody>();
         color_object = gameObject.GetComponent<Renderer>();
-        block_trans = gameObject.GetComponent<Transform>();
 
 
         agent = GetComponent<NavMeshAgent>();
@@ -36,27 +35,36 @@ public class block : MonoBehaviour
     private void FixedUpdate()
     {
 
-        block_trans.transform.eulerAngles = new Vector3(0, 0, 0);
+        if(AIon)
+        {
+            target = GameObject.Find("player").transform;
+            agent.destination = target.transform.position;
+        }
 
-        target = GameObject.Find("player").transform;
-
-        agent.destination = target.transform.position;
 
         float distance = GetDistance(player_rigid.transform.position.x, player_rigid.transform.position.z,
             block_rigid.transform.position.x, block_rigid.transform.position.z);
 
-
-        if (check_speed) agent.speed = 0;
-
-        if (distance < 6)
+        if (!AIon)
         {
-            color_object.material.color = Color.black;
+            if (distance < 5)
+            {
+                color_object.material.color = Color.black;
+                AIon = true;
+            }
+            else
+            {
+                color_object.material.color = Color.white;
+            }
         }
-        else
-        {
-            color_object.material.color = Color.white;
-        }
+    }
 
+    private void Update()
+    {
+        if (block_HP <= 0)
+        {
+            AIon = false;
+        }
     }
 
     float GetDistance(float x1, float y1, float x2, float y2)
@@ -68,15 +76,6 @@ public class block : MonoBehaviour
         distance = Mathf.Sqrt(distance);
 
         return distance;
-    }
-
-    private void OnCollisionStay(Collision collision)
-    {
-        agent.speed = 0;
-
-        check_speed = true;
-
-        block_rigid.constraints = RigidbodyConstraints.FreezeAll;
     }
 
 
