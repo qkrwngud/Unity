@@ -57,10 +57,7 @@ public class block : MonoBehaviour
                 color_object.material.color = Color.white;
             }
         }
-    }
 
-    private void Update()
-    {
         if (block_HP <= 0)
         {
             AIon = false;
