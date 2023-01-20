@@ -49,7 +49,7 @@ public class Player : MonoBehaviour
                 {
                     move = false;
                     block.block_HP -= damage;
-                    Debug.Log(damage + "의 피해를 입힘");
+                    Debug.Log(damage + "의 피해를 입힘ㅇㅇㅇㅇ");
 
                     Invoke("change_move", 0.2f); // 딜레이 이후에 change_move함수 호출
 

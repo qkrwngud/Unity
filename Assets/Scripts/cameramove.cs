@@ -6,7 +6,7 @@ public class cameramove : MonoBehaviour
 {
     public GameObject player;
 
-    private Vector3 vec = new Vector3(0, 10.89f, -6.65f);
+    private Vector3 vec = new Vector3(0, 13.16f, -8.27f);
 
     // Start is called before the first frame update
     void Start()
